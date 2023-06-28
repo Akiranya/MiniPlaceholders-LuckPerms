@@ -12,8 +12,8 @@ import net.luckperms.api.LuckPermsProvider;
 import org.slf4j.Logger;
 
 @Plugin(
-        name = "MiniPlaceholders-LuckPerms-Expansion",
-        id = "miniplaceholders-luckperms-expansion",
+        name = "MiniPlaceholders-LuckPerms",
+        id = "miniplaceholders-luckpermsmini",
         version = Constants.VERSION,
         authors = {"4drian3d"},
         dependencies = {
