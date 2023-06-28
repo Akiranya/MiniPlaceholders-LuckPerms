@@ -96,6 +96,37 @@ public record CommonExpansion(LuckPerms luckPerms) {
                     ? TRUE_COMPONENT
                     : FALSE_COMPONENT
                 );
+            })
+            .audiencePlaceholder("meta", (aud, queue, ctx) -> {
+                final User user = user(aud);
+                if (user == null) {
+                    return null;
+                }
+                String value = user.getCachedData().getMetaData().getMetaValue(queue.popOr("you need to provide a metadata key").value());
+                return Tag.selfClosingInserting(parsePossibleLegacy(value));
+            })
+            .audiencePlaceholder("context", (aud, queue, ctx) -> {
+                final User user = user(aud);
+                if (user == null) {
+                    return null;
+                }
+                String value = luckPerms.getContextManager()
+                    .getContext(user)
+                    .orElseGet(() -> luckPerms.getContextManager().getStaticContext()) // fallback to static context
+                    .getAnyValue(queue.popOr("you need to provide a context key").value())
+                    .orElse(null);
+                return Tag.selfClosingInserting(parsePossibleLegacy(value));
+            })
+            .audiencePlaceholder("static_context", (aud, queue, ctx) -> {
+                final User user = user(aud);
+                if (user == null) {
+                    return null;
+                }
+                String value = luckPerms.getContextManager()
+                    .getStaticContext()
+                    .getAnyValue(queue.popOr("you need to provide a context key").value())
+                    .orElse(null);
+                return Tag.selfClosingInserting(parsePossibleLegacy(value));
             });
     }
 
