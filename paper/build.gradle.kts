@@ -6,7 +6,7 @@ dependencies {
     compileOnly(libs.paper.api)
     compileOnly(libs.miniplaceholders)
     compileOnly(libs.luckperms)
-    implementation(projects.luckpermsExpansionCommon)
+    implementation(projects.common)
 }
 
 tasks {

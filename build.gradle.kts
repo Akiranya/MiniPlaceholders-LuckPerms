@@ -4,8 +4,8 @@ plugins {
 }
 
 dependencies {
-    implementation(projects.luckpermsExpansionPaper)
-    implementation(projects.luckpermsExpansionVelocity)
+    implementation(projects.paper)
+    implementation(projects.velocity)
 }
 
 subprojects {

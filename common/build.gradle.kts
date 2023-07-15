@@ -4,4 +4,5 @@ dependencies {
     compileOnly(libs.adventure.minimessage)
     compileOnly(libs.adventure.legacy)
     compileOnly(libs.luckperms)
+    compileOnly(libs.guava)
 }
