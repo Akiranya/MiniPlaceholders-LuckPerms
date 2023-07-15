@@ -13,6 +13,7 @@ pluginyml = "0.5.3"
 miniplaceholders = "2.2.0"
 luckperms = "5.4"
 adventure = "4.13.1"
+guava = "32.1.1-jre"
 
 [libraries]
 
@@ -24,6 +25,8 @@ luckperms = { module = "net.luckperms:api", version.ref = "luckperms" }
 adventure-api = { group = "net.kyori", name = "adventure-api", version.ref = "adventure" }
 adventure-minimessage = { group = "net.kyori", name = "adventure-text-minimessage", version.ref = "adventure" }
 adventure-legacy = { group = "net.kyori", name = "adventure-text-serializer-legacy", version.ref = "adventure" }
+
+guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 
 [plugins]
 

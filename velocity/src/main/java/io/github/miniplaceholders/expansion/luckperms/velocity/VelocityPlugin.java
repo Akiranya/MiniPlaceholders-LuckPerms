@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 
 @Plugin(
         name = "MiniPlaceholders-LuckPerms",
-        id = "miniplaceholders-luckpermsmini",
+        id = "miniplaceholders-luckperms",
         version = Constants.VERSION,
         authors = {"4drian3d"},
         dependencies = {
