@@ -14,7 +14,6 @@ import net.luckperms.api.node.NodeType;
 import net.luckperms.api.query.QueryOptions;
 import net.luckperms.api.util.Tristate;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -22,8 +21,7 @@ import java.util.UUID;
 
 import static io.github.miniplaceholders.api.utils.Components.FALSE_COMPONENT;
 import static io.github.miniplaceholders.api.utils.Components.TRUE_COMPONENT;
-import static io.github.miniplaceholders.api.utils.LegacyUtils.LEGACY_HEX_SERIALIZER;
-import static net.kyori.adventure.text.minimessage.MiniMessage.miniMessage;
+import static io.github.miniplaceholders.api.utils.LegacyUtils.parsePossibleLegacy;
 
 public record CommonExpansion(LuckPerms luckPerms) {
     private static final Component UNDEFINED_COMPONENT = Component.text("undefined", NamedTextColor.GRAY);
@@ -99,7 +97,7 @@ public record CommonExpansion(LuckPerms luckPerms) {
                 if (user == null) return null;
 
                 String value = user.getCachedData().getMetaData().getMetaValue(queue.popOr("you need to provide a metadata key").value());
-                return Tag.selfClosingInserting(parsePossibleLegacy(value));
+                return Tag.inserting(ctx.deserialize(value));
             })
             .audiencePlaceholder("context", (aud, queue, ctx) -> {
                 final User user = user(aud);
@@ -110,7 +108,7 @@ public record CommonExpansion(LuckPerms luckPerms) {
                     .orElseGet(() -> luckPerms.getContextManager().getStaticContext()) // fallback to static context
                     .getAnyValue(queue.popOr("you need to provide a context key").value())
                     .orElse(null);
-                return Tag.selfClosingInserting(parsePossibleLegacy(value));
+                return Tag.inserting(ctx.deserialize(value));
             })
             .audiencePlaceholder("static_context", (aud, queue, ctx) -> {
                 final User user = user(aud);
@@ -120,7 +118,7 @@ public record CommonExpansion(LuckPerms luckPerms) {
                     .getStaticContext()
                     .getAnyValue(queue.popOr("you need to provide a context key").value())
                     .orElse(null);
-                return Tag.selfClosingInserting(parsePossibleLegacy(value));
+                return Tag.inserting(ctx.deserialize(value));
             })
             .audiencePlaceholder("expiry_time", (aud, queue, ctx) -> {
                 final User user = user(aud);
@@ -225,18 +223,5 @@ public record CommonExpansion(LuckPerms luckPerms) {
             case "s" -> DurationFormatter.SECONDS.format(duration);
             default -> throw new IllegalArgumentException("unknown argument: " + accuracy);
         };
-    }
-
-    private @NotNull Component parsePossibleLegacy(final @Nullable String string) {
-        if (string == null || string.isBlank()) return Component.empty();
-        if (string.indexOf('&') != 0) {
-            return miniMessage().deserialize(
-                miniMessage().serialize(LEGACY_HEX_SERIALIZER.deserialize(string))
-                    .replace("\\<", "<")
-                    .replace("\\>", ">")
-            );
-        } else {
-            return miniMessage().deserialize(string);
-        }
     }
 }
