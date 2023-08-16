@@ -5,7 +5,9 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.identity.Identity;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.Context;
 import net.kyori.adventure.text.minimessage.tag.Tag;
+import net.kyori.adventure.text.minimessage.tag.resolver.ArgumentQueue;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
@@ -32,17 +34,20 @@ public record CommonExpansion(LuckPerms luckPerms) {
                 final User user = user(aud);
                 if (user == null) return null;
 
-                return Tag.inserting(parsePossibleLegacy(user.getCachedData().getMetaData().getPrefix()));
+                Component content = parsePossibleLegacy(user.getCachedData().getMetaData().getPrefix());
+                return optionalSelfClosing(aud, queue, ctx, content);
             })
             .audiencePlaceholder("suffix", (aud, queue, ctx) -> {
                 final User user = user(aud);
                 if (user == null) return null;
 
-                return Tag.inserting(parsePossibleLegacy(user.getCachedData().getMetaData().getSuffix()));
+                Component content = parsePossibleLegacy(user.getCachedData().getMetaData().getSuffix());
+                return optionalSelfClosing(aud, queue, ctx, content);
             })
             .audiencePlaceholder("has_permission", (aud, queue, ctx) -> {
                 final User user = user(aud);
                 if (user == null) return null;
+
                 String permission = queue.popOr(() -> "you need to introduce an permission").value();
                 Tristate result = user.getCachedData().getPermissionData().checkPermission(permission);
                 return Tag.selfClosingInserting(result.asBoolean()
@@ -56,7 +61,6 @@ public record CommonExpansion(LuckPerms luckPerms) {
 
                 final String permission = queue.popOr(() -> "you need to introduce an permission").value();
                 final Tristate result = user.getCachedData().getPermissionData().checkPermission(permission);
-
                 return Tag.selfClosingInserting(switch (result) {
                     case TRUE -> TRUE_COMPONENT;
                     case FALSE -> FALSE_COMPONENT;
@@ -77,9 +81,8 @@ public record CommonExpansion(LuckPerms luckPerms) {
                 if (user == null) return null;
 
                 final String primaryGroup = user.getCachedData().getMetaData().getPrimaryGroup();
-                if (primaryGroup == null) {
-                    return null;
-                }
+                if (primaryGroup == null) return null;
+
                 return Tag.preProcessParsed(primaryGroup);
             })
             .audiencePlaceholder("inherits_group", (aud, queue, ctx) -> {
@@ -97,7 +100,10 @@ public record CommonExpansion(LuckPerms luckPerms) {
                 if (user == null) return null;
 
                 String value = user.getCachedData().getMetaData().getMetaValue(queue.popOr("you need to provide a metadata key").value());
-                return Tag.inserting(ctx.deserialize(value));
+                if (value == null) return null;
+
+                Component content = ctx.deserialize(value);
+                return optionalSelfClosing(aud, queue, ctx, content);
             })
             .audiencePlaceholder("context", (aud, queue, ctx) -> {
                 final User user = user(aud);
@@ -108,7 +114,10 @@ public record CommonExpansion(LuckPerms luckPerms) {
                     .orElseGet(() -> luckPerms.getContextManager().getStaticContext()) // fallback to static context
                     .getAnyValue(queue.popOr("you need to provide a context key").value())
                     .orElse(null);
-                return Tag.inserting(ctx.deserialize(value));
+                if (value == null) return null;
+
+                Component content = ctx.deserialize(value);
+                return optionalSelfClosing(aud, queue, ctx, content);
             })
             .audiencePlaceholder("static_context", (aud, queue, ctx) -> {
                 final User user = user(aud);
@@ -118,7 +127,10 @@ public record CommonExpansion(LuckPerms luckPerms) {
                     .getStaticContext()
                     .getAnyValue(queue.popOr("you need to provide a context key").value())
                     .orElse(null);
-                return Tag.inserting(ctx.deserialize(value));
+                if (value == null) return null;
+
+                Component content = ctx.deserialize(value);
+                return optionalSelfClosing(aud, queue, ctx, content);
             })
             .audiencePlaceholder("expiry_time", (aud, queue, ctx) -> {
                 final User user = user(aud);
@@ -136,7 +148,9 @@ public record CommonExpansion(LuckPerms luckPerms) {
                     .filter(d -> !d.isNegative())
                     .findFirst()
                     .map(duration -> formatDuration(duration, accuracy))
-                    .orElse("");
+                    .orElse(null);
+                if (value == null) return null;
+
                 return Tag.preProcessParsed(value);
             })
             .audiencePlaceholder("inherited_expiry_time", (aud, queue, ctx) -> {
@@ -154,7 +168,9 @@ public record CommonExpansion(LuckPerms luckPerms) {
                     .filter(d -> !d.isNegative())
                     .findFirst()
                     .map(duration -> formatDuration(duration, accuracy))
-                    .orElse("");
+                    .orElse(null);
+                if (value == null) return null;
+
                 return Tag.preProcessParsed(value);
             })
             .audiencePlaceholder("group_expiry_time", (aud, queue, ctx) -> {
@@ -173,7 +189,9 @@ public record CommonExpansion(LuckPerms luckPerms) {
                     .filter(d -> !d.isNegative())
                     .findFirst()
                     .map(duration -> formatDuration(duration, accuracy))
-                    .orElse("");
+                    .orElse(null);
+                if (value == null) return null;
+
                 return Tag.preProcessParsed(value);
             })
             .audiencePlaceholder("inherited_group_expiry_time", (aud, queue, ctx) -> {
@@ -193,7 +211,9 @@ public record CommonExpansion(LuckPerms luckPerms) {
                     .filter(d -> !d.isNegative())
                     .findFirst()
                     .map(duration -> formatDuration(duration, accuracy))
-                    .orElse("");
+                    .orElse(null);
+                if (value == null) return null;
+
                 return Tag.preProcessParsed(value);
             });
     }
@@ -204,6 +224,17 @@ public record CommonExpansion(LuckPerms luckPerms) {
             return null;
         }
         return luckPerms.getUserManager().getUser(uuid);
+    }
+
+    /**
+     * This should be used at last as it reads the queue.
+     */
+    private @NotNull Tag optionalSelfClosing(Audience audience, ArgumentQueue queue, Context context, Component content) {
+        Tag.Argument peek = queue.peek();
+        if (peek != null && peek.value().equals("close")) {
+            return Tag.selfClosingInserting(content);
+        }
+        return Tag.inserting(content);
     }
 
     /**
